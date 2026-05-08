@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { ConverterLayout } from '@/components/converter/ConverterLayout';
 import { InputPanel } from '@/components/converter/InputPanel';
 import { ErrorDisplay } from '@/components/converter/ErrorDisplay';
 import { ConversionStats } from '@/components/converter/ConversionStats';
 import { Button } from '@/components/ui/button';
-import { useClipboard } from '@/hooks/useClipboard';
+import { useClipboard } from '@/hooks/use-clipboard';
 import { useDebounce } from '@/hooks/useDebounce';
 import { markdownToHtml } from '@/services/converters/markdown';
 import { cn } from '@/lib/utils';
@@ -27,7 +27,6 @@ const defaultMarkdown = `# FormatForge
 
 \`\`\`javascript
 const result = formatJson(input, 2);
-console.log(result);
 \`\`\`
 
 ## 表格
@@ -46,36 +45,26 @@ console.log(result);
 
 export default function MarkdownPage() {
   const [input, setInput] = useState(defaultMarkdown);
-  const [htmlOutput, setHtmlOutput] = useState('');
-  const [error, setError] = useState<string | null>(null);
   const [outputTab, setOutputTab] = useState<OutputTab>('preview');
-  const [stats, setStats] = useState<{
-    processingTime?: number;
-    inputSize?: number;
-    outputSize?: number;
-  }>({});
 
   const { copied, copy } = useClipboard();
   const debouncedInput = useDebounce(input, 300);
 
-  useEffect(() => {
+  const conversionResult = useMemo(() => {
     if (!debouncedInput.trim()) {
-      setHtmlOutput('');
-      setStats({});
-      return;
+      return { htmlOutput: '', error: null as string | null, stats: {} as { processingTime?: number; inputSize?: number; outputSize?: number } };
     }
 
     const result = markdownToHtml(debouncedInput);
     if (result.success) {
-      setHtmlOutput(result.data);
-      setError(null);
-      setStats(result.meta ?? {});
-    } else {
-      setHtmlOutput('');
-      setError(result.error.details ?? result.error.message);
-      setStats({});
+      return { htmlOutput: result.data, error: null, stats: result.meta ?? {} };
     }
+    return { htmlOutput: '', error: result.error.details ?? result.error.message, stats: {} as { processingTime?: number; inputSize?: number; outputSize?: number } };
   }, [debouncedInput]);
+
+  const htmlOutput = conversionResult.htmlOutput;
+  const error = conversionResult.error;
+  const stats = conversionResult.stats;
 
   const handleDownload = () => {
     if (!htmlOutput) return;

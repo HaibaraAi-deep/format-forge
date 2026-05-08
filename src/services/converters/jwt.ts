@@ -17,7 +17,7 @@ function base64UrlDecode(str: string): string {
     }
     return new TextDecoder().decode(bytes);
   } catch {
-    throw new Error('Invalid Base64URL encoding');
+    throw new Error('无效的 Base64URL 编码');
   }
 }
 
@@ -36,7 +36,7 @@ export function parseJwt(
   if (!token || !token.trim()) {
     return {
       success: false,
-      error: { code: 'EMPTY_INPUT', message: 'JWT token is empty' },
+      error: { code: 'EMPTY_INPUT', message: 'JWT 令牌为空' },
     };
   }
 
@@ -47,8 +47,8 @@ export function parseJwt(
       success: false,
       error: {
         code: 'INVALID_JWT',
-        message: 'JWT must have 3 parts separated by dots',
-        details: `Found ${parts.length} part(s) instead of 3`,
+        message: 'JWT 必须由三部分以点号分隔',
+        details: `发现 ${parts.length} 个部分，应为 3 个`,
       },
     };
   }
@@ -60,7 +60,7 @@ export function parseJwt(
     if (typeof header !== 'object' || header === null || Array.isArray(header)) {
       return {
         success: false,
-        error: { code: 'INVALID_JWT_HEADER', message: 'JWT header is not a valid JSON object' },
+        error: { code: 'INVALID_JWT_HEADER', message: 'JWT 头部不是有效的 JSON 对象' },
       };
     }
   } catch (e) {
@@ -68,8 +68,8 @@ export function parseJwt(
       success: false,
       error: {
         code: 'INVALID_JWT_HEADER',
-        message: 'Failed to decode JWT header',
-        details: e instanceof Error ? e.message : 'Invalid Base64URL or JSON',
+        message: 'JWT 头部解码失败',
+        details: e instanceof Error ? e.message : '无效的 Base64URL 或 JSON',
       },
     };
   }
@@ -83,7 +83,7 @@ export function parseJwt(
     if (typeof payload !== 'object' || payload === null || Array.isArray(payload)) {
       return {
         success: false,
-        error: { code: 'INVALID_JWT_PAYLOAD', message: 'JWT payload is not a valid JSON object' },
+        error: { code: 'INVALID_JWT_PAYLOAD', message: 'JWT 载荷不是有效的 JSON 对象' },
       };
     }
 
@@ -118,8 +118,8 @@ export function parseJwt(
       success: false,
       error: {
         code: 'INVALID_JWT_PAYLOAD',
-        message: 'Failed to decode JWT payload',
-        details: e instanceof Error ? e.message : 'Invalid Base64URL or JSON',
+        message: 'JWT 载荷解码失败',
+        details: e instanceof Error ? e.message : '无效的 Base64URL 或 JSON',
       },
     };
   }

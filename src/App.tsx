@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { ToastProvider } from '@/components/ui/toast';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
@@ -68,12 +68,12 @@ function NotFound() {
       <div className="text-center">
         <h1 className="text-6xl font-bold text-[var(--primary)]">404</h1>
         <p className="mt-4 text-[var(--muted-foreground)]">页面未找到</p>
-        <a
-          href="/"
+        <Link
+          to="/"
           className="mt-6 inline-block px-6 py-2 bg-[var(--primary)] text-[var(--primary-foreground)] rounded-lg hover:opacity-90 transition-opacity"
         >
           返回首页
-        </a>
+        </Link>
       </div>
     </div>
   );

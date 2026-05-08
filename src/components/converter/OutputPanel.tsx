@@ -3,18 +3,14 @@ import { Button } from '@/components/ui/button';
 import { useClipboard } from '@/hooks/use-clipboard';
 import { Copy, Check, Download } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { formatByteSize } from '@/utils/format';
+import { downloadAsFile } from '@/utils/file';
 
 interface OutputPanelProps {
   value: string;
   label?: string;
   mimeType?: string;
   filename?: string;
-}
-
-function formatByteSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 export function OutputPanel({
@@ -27,15 +23,7 @@ export function OutputPanel({
   const byteSize = new TextEncoder().encode(value).length;
 
   const handleDownload = () => {
-    const blob = new Blob([value], { type: mimeType });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    downloadAsFile(value, filename, mimeType);
   };
 
   return (

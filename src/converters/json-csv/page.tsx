@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useMemo } from 'react';
 import { ConverterLayout } from '@/components/converter/ConverterLayout';
 import { InputPanel } from '@/components/converter/InputPanel';
 import { OutputPanel } from '@/components/converter/OutputPanel';
@@ -22,73 +22,60 @@ const DELIMITER_MAP: Record<DelimiterOption, string> = {
 export default function JsonCsvPage() {
   const [mode, setMode] = useState<Mode>('json-to-csv');
   const [input, setInput] = useState('');
-  const [output, setOutput] = useState('');
-  const [error, setError] = useState<string | null>(null);
   const [delimiterOption, setDelimiterOption] = useState<DelimiterOption>('comma');
   const [customDelimiter, setCustomDelimiter] = useState('');
   const [includeHeaders, setIncludeHeaders] = useState(true);
   const [flatten, setFlatten] = useState(true);
-  const [stats, setStats] = useState<{ processingTime?: number; inputSize?: number; outputSize?: number }>({});
 
   const debouncedInput = useDebounce(input, 300);
 
-  const getDelimiter = useCallback(() => {
-    if (delimiterOption === 'custom') return customDelimiter || ',';
-    return DELIMITER_MAP[delimiterOption];
-  }, [delimiterOption, customDelimiter]);
-
-  useEffect(() => {
-    if (!debouncedInput.trim()) {
-      setOutput('');
-      setError(null);
-      setStats({});
-      return;
+  const conversionResult = useMemo(() => {
+    if (!input.trim() || !debouncedInput.trim()) {
+      return { output: '', error: null as string | null, stats: {} as { processingTime?: number; inputSize?: number; outputSize?: number } };
     }
 
-    const delimiter = getDelimiter();
+    const delimiter = delimiterOption === 'custom' ? (customDelimiter || ',') : DELIMITER_MAP[delimiterOption];
     if (mode === 'json-to-csv') {
       const r = jsonToCsv(debouncedInput, { delimiter, flatten, includeHeaders });
       if (r.success) {
-        setOutput(r.data);
-        setStats({
-          processingTime: r.meta?.processingTime,
-          inputSize: r.meta?.inputSize,
-          outputSize: r.meta?.outputSize,
-        });
-        setError(null);
-      } else {
-        setOutput('');
-        setError(r.error.message);
-        setStats({});
+        return {
+          output: r.data,
+          error: null as string | null,
+          stats: {
+            processingTime: r.meta?.processingTime,
+            inputSize: r.meta?.inputSize,
+            outputSize: r.meta?.outputSize,
+          },
+        };
       }
-    } else {
-      const r = csvToJson(debouncedInput, { delimiter });
-      if (r.success) {
-        setOutput(JSON.stringify(r.data, null, 2));
-        setStats({
-          processingTime: r.meta?.processingTime,
-          inputSize: r.meta?.inputSize,
-          outputSize: r.meta?.outputSize,
-        });
-        setError(null);
-      } else {
-        setOutput('');
-        setError(r.error.message);
-        setStats({});
-      }
+      return { output: '', error: r.error.message, stats: {} as { processingTime?: number; inputSize?: number; outputSize?: number } };
     }
-  }, [debouncedInput, mode, getDelimiter, flatten, includeHeaders]);
+    const r = csvToJson(debouncedInput, { delimiter });
+    if (r.success) {
+      return {
+        output: JSON.stringify(r.data, null, 2),
+        error: null as string | null,
+        stats: {
+          processingTime: r.meta?.processingTime,
+          inputSize: r.meta?.inputSize,
+          outputSize: r.meta?.outputSize,
+        },
+      };
+    }
+    return { output: '', error: r.error.message, stats: {} as { processingTime?: number; inputSize?: number; outputSize?: number } };
+  }, [input, debouncedInput, mode, delimiterOption, customDelimiter, flatten, includeHeaders]);
+
+  const output = conversionResult.output;
+  const error = conversionResult.error;
+  const stats = conversionResult.stats;
 
   const handleModeSwitch = () => {
     setMode((prev) => (prev === 'json-to-csv' ? 'csv-to-json' : 'json-to-csv'));
     setInput('');
-    setOutput('');
-    setError(null);
-    setStats({});
   };
 
-  const handleFileLoad = (_content: string, _file: File) => {
-    setInput(_content);
+  const handleFileLoad = (content: string) => {
+    setInput(content);
   };
 
   return (

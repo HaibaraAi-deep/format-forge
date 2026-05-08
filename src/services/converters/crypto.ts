@@ -52,14 +52,14 @@ export async function encryptText(
   if (!plaintext) {
     return {
       success: false,
-      error: { code: 'EMPTY_INPUT', message: 'Plaintext is empty' },
+      error: { code: 'EMPTY_INPUT', message: '明文为空' },
     };
   }
 
   if (!password) {
     return {
       success: false,
-      error: { code: 'EMPTY_PASSWORD', message: 'Password is required for encryption' },
+      error: { code: 'EMPTY_PASSWORD', message: '加密需要密码' },
     };
   }
 
@@ -93,8 +93,8 @@ export async function encryptText(
       success: false,
       error: {
         code: 'ENCRYPTION_ERROR',
-        message: 'Failed to encrypt text',
-        details: e instanceof Error ? e.message : 'Unknown error',
+        message: '加密失败',
+        details: e instanceof Error ? e.message : '未知错误',
       },
     };
   }
@@ -110,14 +110,14 @@ export async function decryptText(
   if (!ciphertext || !ciphertext.trim()) {
     return {
       success: false,
-      error: { code: 'EMPTY_INPUT', message: 'Ciphertext is empty' },
+      error: { code: 'EMPTY_INPUT', message: '密文为空' },
     };
   }
 
   if (!password) {
     return {
       success: false,
-      error: { code: 'EMPTY_PASSWORD', message: 'Password is required for decryption' },
+      error: { code: 'EMPTY_PASSWORD', message: '解密需要密码' },
     };
   }
 
@@ -127,7 +127,7 @@ export async function decryptText(
     if (combined.length < 29) {
       return {
         success: false,
-        error: { code: 'INVALID_CIPHERTEXT', message: 'Ciphertext is too short to be valid' },
+        error: { code: 'INVALID_CIPHERTEXT', message: '密文长度不足，无法解密' },
       };
     }
 
@@ -157,13 +157,13 @@ export async function decryptText(
       success: false,
       error: {
         code: 'DECRYPTION_ERROR',
-        message: 'Failed to decrypt text',
+        message: '解密失败',
         details:
           e instanceof Error
             ? e.message.includes('decrypt')
-              ? 'Wrong password or corrupted ciphertext'
+              ? '密码错误或密文已损坏'
               : e.message
-            : 'Unknown error',
+            : '未知错误',
       },
     };
   }
@@ -172,7 +172,7 @@ export async function decryptText(
 export function getPasswordStrength(
   password: string
 ): { score: number; label: string } {
-  if (!password) return { score: 0, label: 'Empty' };
+  if (!password) return { score: 0, label: '空' };
 
   let score = 0;
 
@@ -184,7 +184,7 @@ export function getPasswordStrength(
 
   score = Math.min(score, 4);
 
-  const labels = ['Very Weak', 'Weak', 'Fair', 'Strong', 'Very Strong'];
+  const labels = ['非常弱', '弱', '一般', '强', '非常强'];
 
   return { score, label: labels[score] };
 }

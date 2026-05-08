@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useMemo } from 'react';
 import { ConverterLayout } from '@/components/converter/ConverterLayout';
 import { InputPanel } from '@/components/converter/InputPanel';
 import { OutputPanel } from '@/components/converter/OutputPanel';
@@ -16,81 +16,51 @@ type Mode = 'encode' | 'decode';
 export default function Base64Page() {
   const [mode, setMode] = useState<Mode>('encode');
   const [input, setInput] = useState('');
-  const [output, setOutput] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [stats, setStats] = useState<{ processingTime?: number; inputSize?: number; outputSize?: number }>({});
-  const [isDataUrl, setIsDataUrl] = useState(false);
-  const [decodedFileInfo, setDecodedFileInfo] = useState<{ mimeType: string } | null>(null);
+  const [overrideOutput, setOverrideOutput] = useState<string | null>(null);
+  const [overrideError, setOverrideError] = useState<string | null>(null);
+  const [overrideStats, setOverrideStats] = useState<{ processingTime?: number; inputSize?: number; outputSize?: number } | null>(null);
 
   const { readAsArrayBuffer, fileInfo, clear: clearFileInfo } = useFileHandler();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const debouncedInput = useDebounce(input, 300);
 
-  useEffect(() => {
+  const conversionResult = useMemo(() => {
     if (!debouncedInput.trim()) {
-      setOutput('');
-      setError(null);
-      setStats({});
-      setIsDataUrl(false);
-      setDecodedFileInfo(null);
-      return;
+      return { output: '', error: null as string | null, stats: {} as { processingTime?: number; inputSize?: number; outputSize?: number }, isDataUrl: false, decodedFileInfo: null as { mimeType: string } | null };
     }
 
     if (mode === 'encode') {
       const result = encodeToBase64(debouncedInput);
       if (result.success) {
-        setOutput(result.data);
-        setError(null);
-        setStats({
-          processingTime: result.meta?.processingTime,
-          inputSize: result.meta?.inputSize,
-          outputSize: result.meta?.outputSize,
-        });
-      } else {
-        setOutput('');
-        setError(result.error.message);
-        setStats({});
+        return { output: result.data, error: null, stats: { processingTime: result.meta?.processingTime, inputSize: result.meta?.inputSize, outputSize: result.meta?.outputSize }, isDataUrl: false, decodedFileInfo: null };
       }
-      setIsDataUrl(false);
-      setDecodedFileInfo(null);
-    } else {
-      const trimmed = debouncedInput.trim();
-      const dataUrlMatch = trimmed.match(/^data:([^;]+);base64,/);
-      const detectedDataUrl = !!dataUrlMatch;
-      setIsDataUrl(detectedDataUrl);
-
-      const result = decodeFromBase64(trimmed);
-      if (result.success) {
-        setOutput(result.data);
-        setError(null);
-        setStats({
-          processingTime: result.meta?.processingTime,
-          inputSize: result.meta?.inputSize,
-          outputSize: result.meta?.outputSize,
-        });
-        if (detectedDataUrl) {
-          setDecodedFileInfo({ mimeType: dataUrlMatch![1] });
-        } else {
-          setDecodedFileInfo(null);
-        }
-      } else {
-        setOutput('');
-        setError(result.error.message);
-        setStats({});
-        setDecodedFileInfo(null);
-      }
+      return { output: '', error: result.error.message, stats: {}, isDataUrl: false, decodedFileInfo: null };
     }
+
+    const trimmed = debouncedInput.trim();
+    const dataUrlMatch = trimmed.match(/^data:([^;]+);base64,/);
+    const detectedDataUrl = !!dataUrlMatch;
+    const result = decodeFromBase64(trimmed);
+    if (result.success) {
+      const info = detectedDataUrl ? { mimeType: dataUrlMatch![1] } : null;
+      return { output: result.data, error: null, stats: { processingTime: result.meta?.processingTime, inputSize: result.meta?.inputSize, outputSize: result.meta?.outputSize }, isDataUrl: detectedDataUrl, decodedFileInfo: info };
+    }
+    return { output: '', error: result.error.message, stats: {}, isDataUrl: detectedDataUrl, decodedFileInfo: null };
   }, [debouncedInput, mode]);
+
+  const output = overrideOutput ?? conversionResult.output;
+  const error = overrideError ?? conversionResult.error;
+  const stats = overrideStats ?? conversionResult.stats;
+  const resolvedIsDataUrl = conversionResult.isDataUrl;
+  const resolvedDecodedFileInfo = conversionResult.decodedFileInfo;
 
   const handleModeSwitch = () => {
     setMode((prev) => (prev === 'encode' ? 'decode' : 'encode'));
     setInput('');
-    setOutput('');
-    setError(null);
-    setStats({});
-    setIsDataUrl(false);
-    setDecodedFileInfo(null);
+    setOverrideOutput(null);
+    setOverrideError(null);
+    setOverrideStats(null);
     clearFileInfo();
   };
 
@@ -101,19 +71,19 @@ export default function Base64Page() {
       if (result.success) {
         const dataUrl = `data:${file.type || 'application/octet-stream'};base64,${result.data}`;
         setInput(dataUrl);
-        setOutput(result.data);
-        setError(null);
-        setStats({
+        setOverrideOutput(result.data);
+        setOverrideError(null);
+        setOverrideStats({
           processingTime: result.meta?.processingTime,
           inputSize: result.meta?.inputSize,
           outputSize: result.meta?.outputSize,
         });
       } else {
-        setError(result.error.message);
-        setOutput('');
+        setOverrideError(result.error.message);
+        setOverrideOutput('');
       }
     } catch {
-      setError('文件读取失败');
+      setOverrideError('文件读取失败');
     }
   }, [readAsArrayBuffer]);
 
@@ -210,12 +180,12 @@ export default function Base64Page() {
         />
       </div>
 
-      {mode === 'decode' && isDataUrl && (
+      {mode === 'decode' && resolvedIsDataUrl && (
         <div className="flex items-center gap-3">
           <Badge variant="outline">检测到 Data URL</Badge>
-          {decodedFileInfo && (
+          {resolvedDecodedFileInfo && (
             <span className="text-xs text-[var(--muted-foreground)]">
-              MIME 类型: {decodedFileInfo.mimeType}
+              MIME 类型: {resolvedDecodedFileInfo.mimeType}
             </span>
           )}
           <Button variant="outline" size="sm" onClick={handleDecodeDownload} className="gap-1.5 ml-auto">

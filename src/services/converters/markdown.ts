@@ -14,7 +14,7 @@ export function markdownToHtml(input: string): Result<string> {
   if (!input || !input.trim()) {
     return {
       success: false,
-      error: { code: 'EMPTY_INPUT', message: 'Input Markdown string is empty' },
+      error: { code: 'EMPTY_INPUT', message: '输入的 Markdown 字符串为空' },
     };
   }
 
@@ -33,8 +33,8 @@ export function markdownToHtml(input: string): Result<string> {
       success: false,
       error: {
         code: 'MARKDOWN_PARSE_ERROR',
-        message: 'Failed to convert Markdown to HTML',
-        details: e instanceof Error ? e.message : 'Unknown error',
+        message: 'Markdown 转 HTML 失败',
+        details: e instanceof Error ? e.message : '未知错误',
       },
     };
   }

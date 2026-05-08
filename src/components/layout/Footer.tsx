@@ -10,7 +10,7 @@ export function Footer() {
           </p>
           <div className="flex items-center gap-4">
             <a
-              href="https://github.com"
+              href="https://github.com/HaibaraAi-deep/format-forge"
               target="_blank"
               rel="noopener noreferrer"
               className="text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"

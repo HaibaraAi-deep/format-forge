@@ -7,7 +7,7 @@ export function timestampToDate(timestamp: number): Result<string> {
   if (timestamp === undefined || timestamp === null || isNaN(timestamp)) {
     return {
       success: false,
-      error: { code: 'INVALID_TIMESTAMP', message: 'Invalid timestamp value' },
+      error: { code: 'INVALID_TIMESTAMP', message: '无效的时间戳值' },
     };
   }
 
@@ -23,7 +23,7 @@ export function timestampToDate(timestamp: number): Result<string> {
     if (isNaN(date.getTime())) {
       return {
         success: false,
-        error: { code: 'INVALID_TIMESTAMP', message: 'Timestamp results in invalid date' },
+        error: { code: 'INVALID_TIMESTAMP', message: '时间戳对应无效日期' },
       };
     }
 
@@ -40,8 +40,8 @@ export function timestampToDate(timestamp: number): Result<string> {
       success: false,
       error: {
         code: 'CONVERSION_ERROR',
-        message: 'Failed to convert timestamp to date',
-        details: e instanceof Error ? e.message : 'Unknown error',
+        message: '时间戳转日期失败',
+        details: e instanceof Error ? e.message : '未知错误',
       },
     };
   }
@@ -54,7 +54,7 @@ export function dateToTimestamp(dateStr: string): Result<number> {
   if (!dateStr || !dateStr.trim()) {
     return {
       success: false,
-      error: { code: 'EMPTY_INPUT', message: 'Date string is empty' },
+      error: { code: 'EMPTY_INPUT', message: '日期字符串为空' },
     };
   }
 
@@ -64,7 +64,7 @@ export function dateToTimestamp(dateStr: string): Result<number> {
     if (isNaN(date.getTime())) {
       return {
         success: false,
-        error: { code: 'INVALID_DATE', message: 'Invalid date string', details: dateStr },
+        error: { code: 'INVALID_DATE', message: '无效的日期字符串', details: dateStr },
       };
     }
 
@@ -81,8 +81,8 @@ export function dateToTimestamp(dateStr: string): Result<number> {
       success: false,
       error: {
         code: 'CONVERSION_ERROR',
-        message: 'Failed to convert date to timestamp',
-        details: e instanceof Error ? e.message : 'Unknown error',
+        message: '日期转时间戳失败',
+        details: e instanceof Error ? e.message : '未知错误',
       },
     };
   }

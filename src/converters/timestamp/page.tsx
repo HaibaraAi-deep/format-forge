@@ -3,7 +3,7 @@ import { ConverterLayout } from '@/components/converter/ConverterLayout';
 import { ErrorDisplay } from '@/components/converter/ErrorDisplay';
 import { ConversionStats } from '@/components/converter/ConversionStats';
 import { Button } from '@/components/ui/button';
-import { useClipboard } from '@/hooks/useClipboard';
+import { useClipboard } from '@/hooks/use-clipboard';
 import {
   timestampToDate,
   dateToTimestamp,
@@ -27,7 +27,7 @@ function getRelativeTime(date: Date): string {
   const months = Math.floor(days / 30);
   const years = Math.floor(days / 365);
 
-  let relative = '';
+  let relative;
   if (years > 0) relative = `${years} 年`;
   else if (months > 0) relative = `${months} 个月`;
   else if (days > 0) relative = `${days} 天`;
@@ -67,7 +67,7 @@ export default function TimestampPage() {
 
   const [currentTs, setCurrentTs] = useState(getCurrentTimestamp());
 
-  const { copied: _copied, copy } = useClipboard();
+  const { copy } = useClipboard();
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
   useEffect(() => {

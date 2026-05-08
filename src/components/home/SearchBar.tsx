@@ -24,6 +24,7 @@ export function SearchBar({ value, onChange, placeholder = '搜索工具...' }: 
         value={value}
         onChange={handleChange}
         placeholder={placeholder}
+        aria-label="搜索工具"
         className={cn(
           'flex h-10 w-full rounded-[var(--radius)] border border-[var(--input)] bg-[var(--card)] pl-9 pr-9 py-2 text-sm',
           'placeholder:text-[var(--muted-foreground)]',

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useMemo } from 'react';
 import type { Result } from '@/types';
 import { ConverterLayout } from '@/components/converter/ConverterLayout';
 import { InputPanel } from '@/components/converter/InputPanel';
@@ -50,6 +50,14 @@ function JsonBlock({ json, title, copyButton }: { json: string; title: string; c
   );
 }
 
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
 function syntaxHighlight(json: string): string {
   return json.replace(
     /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?)/g,
@@ -68,7 +76,7 @@ function syntaxHighlight(json: string): string {
       } else if (/\d/.test(match)) {
         cls = 'text-[#d19a66]';
       }
-      return `<span class="${cls}">${match}</span>`;
+      return `<span class="${cls}">${escapeHtml(match)}</span>`;
     },
   );
 }
@@ -94,30 +102,22 @@ function CopyButton({ text }: { text: string }) {
 
 export default function JwtPage() {
   const [input, setInput] = useState('');
-  const [decoded, setDecoded] = useState<JwtDecoded | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const debouncedInput = useDebounce(input, 300);
 
-  const decode = useCallback((token: string) => {
-    if (!token.trim()) {
-      setDecoded(null);
-      setError(null);
-      return;
+  const conversionResult = useMemo(() => {
+    if (!debouncedInput.trim()) {
+      return { decoded: null as JwtDecoded | null, error: null as string | null };
     }
 
-    const result: Result<JwtDecoded> = parseJwt(token);
+    const result: Result<JwtDecoded> = parseJwt(debouncedInput);
     if (result.success) {
-      setDecoded(result.data);
-      setError(null);
-    } else {
-      setDecoded(null);
-      setError(result.error.message);
+      return { decoded: result.data, error: null };
     }
-  }, []);
+    return { decoded: null, error: result.error.message };
+  }, [debouncedInput]);
 
-  useEffect(() => {
-    decode(debouncedInput);
-  }, [debouncedInput, decode]);
+  const decoded = conversionResult.decoded;
+  const error = conversionResult.error;
 
   const headerJson = decoded ? JSON.stringify(decoded.header, null, 2) : '';
   const payloadJson = decoded ? JSON.stringify(decoded.payload, null, 2) : '';

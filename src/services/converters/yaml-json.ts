@@ -8,17 +8,17 @@ export function yamlToJson(yamlInput: string): Result<string> {
   if (!yamlInput || !yamlInput.trim()) {
     return {
       success: false,
-      error: { code: 'EMPTY_INPUT', message: 'Input YAML string is empty' },
+      error: { code: 'EMPTY_INPUT', message: '输入的 YAML 字符串为空' },
     };
   }
 
   try {
-    const parsed = yaml.load(yamlInput, { schema: yaml.DEFAULT_SCHEMA });
+    const parsed = yaml.load(yamlInput, { schema: yaml.JSON_SCHEMA });
 
     if (parsed === undefined || parsed === null) {
       return {
         success: false,
-        error: { code: 'EMPTY_YAML', message: 'YAML content is null or undefined' },
+        error: { code: 'EMPTY_YAML', message: 'YAML 内容为空' },
       };
     }
 
@@ -31,7 +31,7 @@ export function yamlToJson(yamlInput: string): Result<string> {
       meta: { processingTime: performance.now() - start, inputSize, outputSize },
     };
   } catch (e) {
-    const msg = e instanceof Error ? e.message : 'Invalid YAML';
+    const msg = e instanceof Error ? e.message : '无效的 YAML';
     const lineMatch = msg.match(/line\s+(\d+)/i);
     const colMatch = msg.match(/column\s+(\d+)/i);
 
@@ -39,7 +39,7 @@ export function yamlToJson(yamlInput: string): Result<string> {
       success: false,
       error: {
         code: 'YAML_PARSE_ERROR',
-        message: 'Failed to parse YAML',
+        message: 'YAML 解析失败',
         details: msg,
         line: lineMatch ? parseInt(lineMatch[1]) : undefined,
         column: colMatch ? parseInt(colMatch[1]) : undefined,
@@ -55,7 +55,7 @@ export function jsonToYaml(json: string): Result<string> {
   if (!json || !json.trim()) {
     return {
       success: false,
-      error: { code: 'EMPTY_INPUT', message: 'Input JSON string is empty' },
+      error: { code: 'EMPTY_INPUT', message: '输入的 JSON 字符串为空' },
     };
   }
 
@@ -75,7 +75,7 @@ export function jsonToYaml(json: string): Result<string> {
       meta: { processingTime: performance.now() - start, inputSize, outputSize },
     };
   } catch (e) {
-    const msg = e instanceof Error ? e.message : 'Invalid JSON';
+    const msg = e instanceof Error ? e.message : '无效的 JSON';
 
     if (msg.includes('JSON')) {
       const posMatch = msg.match(/position\s+(\d+)/i);
@@ -94,7 +94,7 @@ export function jsonToYaml(json: string): Result<string> {
         success: false,
         error: {
           code: 'INVALID_JSON',
-          message: 'Failed to parse JSON',
+          message: 'JSON 解析失败',
           details: msg,
           line,
           column,
@@ -106,7 +106,7 @@ export function jsonToYaml(json: string): Result<string> {
       success: false,
       error: {
         code: 'YAML_DUMP_ERROR',
-        message: 'Failed to convert JSON to YAML',
+        message: 'JSON 转 YAML 失败',
         details: msg,
       },
     };

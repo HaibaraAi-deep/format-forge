@@ -3,6 +3,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { FileDropZone } from './FileDropZone';
 import { Upload } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { formatByteSize } from '@/utils/format';
 
 interface InputPanelProps {
   value: string;
@@ -10,12 +11,6 @@ interface InputPanelProps {
   placeholder?: string;
   acceptFileTypes?: string;
   onFileLoad?: (content: string, file: File) => void;
-}
-
-function formatByteSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 export function InputPanel({

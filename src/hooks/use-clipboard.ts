@@ -2,18 +2,19 @@ import { useState, useCallback } from 'react';
 
 interface UseClipboardReturn {
   copied: boolean;
-  copy: (text: string) => Promise<void>;
+  copy: (text: string) => Promise<boolean>;
 }
 
 export function useClipboard(resetDelay = 2000): UseClipboardReturn {
   const [copied, setCopied] = useState(false);
 
   const copy = useCallback(
-    async (text: string) => {
+    async (text: string): Promise<boolean> => {
       try {
         await navigator.clipboard.writeText(text);
         setCopied(true);
         setTimeout(() => setCopied(false), resetDelay);
+        return true;
       } catch {
         const textarea = document.createElement('textarea');
         textarea.value = text;
@@ -25,6 +26,7 @@ export function useClipboard(resetDelay = 2000): UseClipboardReturn {
         document.body.removeChild(textarea);
         setCopied(true);
         setTimeout(() => setCopied(false), resetDelay);
+        return true;
       }
     },
     [resetDelay],

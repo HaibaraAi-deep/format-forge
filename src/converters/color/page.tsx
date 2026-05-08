@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { ConverterLayout } from '@/components/converter/ConverterLayout';
 import { ErrorDisplay } from '@/components/converter/ErrorDisplay';
 import { Button } from '@/components/ui/button';
 import { parseColor, colorToHex, colorToRgb, colorToHsl, colorToRgba, colorToHsla } from '@/services/converters/color';
 import type { Color } from '@/services/converters/color';
-import { useClipboard } from '@/hooks/useClipboard';
+import { useClipboard } from '@/hooks/use-clipboard';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Copy, Check, Palette } from 'lucide-react';
 
@@ -56,27 +56,23 @@ function FormatRow({ label, value }: FormatRowProps) {
 
 export default function ColorPage() {
   const [input, setInput] = useState('#3B82F6');
-  const [color, setColor] = useState<Color | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
   const debouncedInput = useDebounce(input, 200);
 
-  useEffect(() => {
+  const conversionResult = useMemo(() => {
     if (!debouncedInput.trim()) {
-      setColor(null);
-      setError(null);
-      return;
+      return { color: null as Color | null, error: null as string | null };
     }
 
     const result = parseColor(debouncedInput);
     if (result.success) {
-      setColor(result.data);
-      setError(null);
-    } else {
-      setColor(null);
-      setError(result.error.message);
+      return { color: result.data, error: null };
     }
+    return { color: null, error: result.error.message };
   }, [debouncedInput]);
+
+  const color = conversionResult.color;
+  const error = conversionResult.error;
 
   const handleColorPickerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const hex = e.target.value;

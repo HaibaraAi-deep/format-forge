@@ -5,7 +5,7 @@ import { OutputPanel } from '@/components/converter/OutputPanel';
 import { ErrorDisplay } from '@/components/converter/ErrorDisplay';
 import { ConversionStats } from '@/components/converter/ConversionStats';
 import { Button } from '@/components/ui/button';
-import { useClipboard } from '@/hooks/useClipboard';
+import { useClipboard } from '@/hooks/use-clipboard';
 import {
   encodeUrl,
   decodeUrl,
@@ -39,7 +39,7 @@ export default function UrlPage() {
     outputSize?: number;
   }>({});
 
-  const { copied: _copied, copy } = useClipboard();
+  const { copy } = useClipboard();
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   const handleCopyParamValue = async (key: string, value: string) => {

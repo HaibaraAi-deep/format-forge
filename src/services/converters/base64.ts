@@ -7,7 +7,7 @@ export function encodeToBase64(input: string): Result<string> {
   if (input === '') {
     return {
       success: false,
-      error: { code: 'EMPTY_INPUT', message: 'Input string is empty' },
+      error: { code: 'EMPTY_INPUT', message: '输入字符串为空' },
     };
   }
 
@@ -30,8 +30,8 @@ export function encodeToBase64(input: string): Result<string> {
       success: false,
       error: {
         code: 'ENCODE_ERROR',
-        message: 'Failed to encode input to Base64',
-        details: e instanceof Error ? e.message : 'Unknown error',
+        message: 'Base64 编码失败',
+        details: e instanceof Error ? e.message : '未知错误',
       },
     };
   }
@@ -44,7 +44,7 @@ export function decodeFromBase64(input: string): Result<string> {
   if (!input || !input.trim()) {
     return {
       success: false,
-      error: { code: 'EMPTY_INPUT', message: 'Input Base64 string is empty' },
+      error: { code: 'EMPTY_INPUT', message: '输入的 Base64 字符串为空' },
     };
   }
 
@@ -67,8 +67,8 @@ export function decodeFromBase64(input: string): Result<string> {
       success: false,
       error: {
         code: 'DECODE_ERROR',
-        message: 'Failed to decode Base64 input',
-        details: e instanceof Error ? e.message : 'Invalid Base64 string',
+        message: 'Base64 解码失败',
+        details: e instanceof Error ? e.message : '无效的 Base64 字符串',
       },
     };
   }
@@ -81,7 +81,7 @@ export function encodeFileToBase64(arrayBuffer: ArrayBuffer): Result<string> {
   if (inputSize === 0) {
     return {
       success: false,
-      error: { code: 'EMPTY_INPUT', message: 'Input ArrayBuffer is empty' },
+      error: { code: 'EMPTY_INPUT', message: '输入数据为空' },
     };
   }
 
@@ -104,8 +104,8 @@ export function encodeFileToBase64(arrayBuffer: ArrayBuffer): Result<string> {
       success: false,
       error: {
         code: 'ENCODE_ERROR',
-        message: 'Failed to encode file to Base64',
-        details: e instanceof Error ? e.message : 'Unknown error',
+        message: '文件 Base64 编码失败',
+        details: e instanceof Error ? e.message : '未知错误',
       },
     };
   }
@@ -118,7 +118,7 @@ export function decodeBase64ToFile(input: string): Result<{ data: ArrayBuffer; m
   if (!input || !input.trim()) {
     return {
       success: false,
-      error: { code: 'EMPTY_INPUT', message: 'Input Base64 string is empty' },
+      error: { code: 'EMPTY_INPUT', message: '输入的 Base64 字符串为空' },
     };
   }
 
@@ -152,8 +152,8 @@ export function decodeBase64ToFile(input: string): Result<{ data: ArrayBuffer; m
       success: false,
       error: {
         code: 'DECODE_ERROR',
-        message: 'Failed to decode Base64 to file',
-        details: e instanceof Error ? e.message : 'Invalid Base64 string',
+        message: 'Base64 文件解码失败',
+        details: e instanceof Error ? e.message : '无效的 Base64 字符串',
       },
     };
   }

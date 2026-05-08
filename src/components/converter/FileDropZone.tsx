@@ -87,6 +87,10 @@ export function FileDropZone({
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         onClick={handleClick}
+        role="button"
+        tabIndex={0}
+        aria-label="拖拽文件到此处或点击浏览上传"
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleClick(); }}
         className={cn(
           'flex flex-col items-center justify-center gap-2 rounded-[var(--radius)] border-2 border-dashed p-6 cursor-pointer transition-colors',
           isDragOver
