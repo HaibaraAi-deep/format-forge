@@ -24,7 +24,7 @@ export function jsonToCsv(
   if (!json || !json.trim()) {
     return {
       success: false,
-      error: { code: 'EMPTY_INPUT', message: 'Input JSON string is empty' },
+      error: { code: 'EMPTY_INPUT', message: '输入的 JSON 字符串为空' },
     };
   }
 
@@ -32,24 +32,24 @@ export function jsonToCsv(
   try {
     parsed = JSON.parse(json);
   } catch (e) {
-    const msg = e instanceof Error ? e.message : 'Invalid JSON';
+    const msg = e instanceof Error ? e.message : '无效的 JSON';
     return {
       success: false,
-      error: { code: 'INVALID_JSON', message: 'Failed to parse JSON', details: msg },
+      error: { code: 'INVALID_JSON', message: 'JSON 解析失败', details: msg },
     };
   }
 
   if (!Array.isArray(parsed)) {
     return {
       success: false,
-      error: { code: 'NON_ARRAY_JSON', message: 'JSON must be an array of objects to convert to CSV' },
+      error: { code: 'NON_ARRAY_JSON', message: 'JSON 必须是对象数组才能转换为 CSV' },
     };
   }
 
   if (parsed.length === 0) {
     return {
       success: false,
-      error: { code: 'EMPTY_ARRAY', message: 'JSON array is empty, nothing to convert' },
+      error: { code: 'EMPTY_ARRAY', message: 'JSON 数组为空，无法转换' },
     };
   }
 
@@ -93,7 +93,7 @@ export function csvToJson(
   if (!csv || !csv.trim()) {
     return {
       success: false,
-      error: { code: 'EMPTY_INPUT', message: 'Input CSV string is empty' },
+      error: { code: 'EMPTY_INPUT', message: '输入的 CSV 字符串为空' },
     };
   }
 

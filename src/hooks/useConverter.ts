@@ -19,7 +19,6 @@ interface UseConverterReturn<T> {
 
 export function useConverter<T>({
   convertFn,
-  autoConvert: _autoConvert = true,
 }: UseConverterOptions<T>): UseConverterReturn<T> {
   const [input, setInput] = useState('');
   const [output, setOutput] = useState<Result<T> | null>(null);

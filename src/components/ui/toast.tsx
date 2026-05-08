@@ -44,6 +44,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useToast() {
   const context = React.useContext(ToastContext);
   if (!context) {
@@ -74,7 +75,7 @@ function ToastContainer({
   if (toasts.length === 0) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
+    <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2" role="status" aria-live="polite">
       {toasts.map((toast) => (
         <div
           key={toast.id}
@@ -89,6 +90,7 @@ function ToastContainer({
           <span className="flex-1">{toast.message}</span>
           <button
             onClick={() => onRemove(toast.id)}
+            aria-label="关闭通知"
             className="ml-2 rounded-sm opacity-70 hover:opacity-100 transition-opacity"
           >
             <X className="h-3.5 w-3.5" />

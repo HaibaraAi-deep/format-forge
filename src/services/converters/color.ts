@@ -28,7 +28,7 @@ function rgbToHsl(r: number, g: number, b: number): { h: number; s: number; l: n
   const d = max - min;
   const s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
 
-  let h = 0;
+  let h;
   if (max === rn) {
     h = ((gn - bn) / d + (gn < bn ? 6 : 0)) / 6;
   } else if (max === gn) {
@@ -81,7 +81,7 @@ export function parseColor(input: string): Result<Color> {
   if (!input || !input.trim()) {
     return {
       success: false,
-      error: { code: 'EMPTY_INPUT', message: 'Color input is empty' },
+      error: { code: 'EMPTY_INPUT', message: '颜色输入为空' },
     };
   }
 
@@ -110,7 +110,7 @@ export function parseColor(input: string): Result<Color> {
     } else {
       return {
         success: false,
-        error: { code: 'INVALID_HEX', message: 'Invalid hex color format' },
+        error: { code: 'INVALID_HEX', message: '无效的十六进制颜色格式' },
       };
     }
   } else {
@@ -140,8 +140,8 @@ export function parseColor(input: string): Result<Color> {
           success: false,
           error: {
             code: 'INVALID_COLOR',
-            message: 'Unrecognized color format',
-            details: 'Supported formats: #hex, rgb(), rgba(), hsl(), hsla()',
+            message: '无法识别的颜色格式',
+            details: '支持的格式: #hex, rgb(), rgba(), hsl(), hsla()',
           },
         };
       }

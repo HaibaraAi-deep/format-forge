@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { ConverterLayout } from '@/components/converter/ConverterLayout';
 import { InputPanel } from '@/components/converter/InputPanel';
 import { OutputPanel } from '@/components/converter/OutputPanel';
@@ -33,28 +33,37 @@ export default function CryptoPage() {
   const [input, setInput] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [output, setOutput] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const [overrideOutput, setOverrideOutput] = useState<string | null>(null);
+  const [overrideError, setOverrideError] = useState<string | null>(null);
+  const [overrideStats, setOverrideStats] = useState<{ processingTime?: number; inputSize?: number; outputSize?: number } | null>(null);
   const [isConverting, setIsConverting] = useState(false);
-  const [stats, setStats] = useState<{ processingTime?: number; inputSize?: number; outputSize?: number }>({});
 
   const debouncedInput = useDebounce(input, 300);
   const debouncedPassword = useDebounce(password, 300);
 
   const passwordStrength = getPasswordStrength(password);
 
+  const isEmpty = !input.trim() || !debouncedInput.trim() || !debouncedPassword;
+
+  const conversionResult = useMemo(() => ({
+    output: '' as string,
+    error: null as string | null,
+    stats: {} as { processingTime?: number; inputSize?: number; outputSize?: number },
+  }), []);
+
+  const output = isEmpty ? conversionResult.output : (overrideOutput ?? conversionResult.output);
+  const error = isEmpty ? conversionResult.error : (overrideError ?? conversionResult.error);
+  const stats = isEmpty ? conversionResult.stats : (overrideStats ?? conversionResult.stats);
+
   useEffect(() => {
     if (!debouncedInput.trim() || !debouncedPassword) {
-      setOutput('');
-      setError(null);
-      setStats({});
       return;
     }
 
+    let cancelled = false;
+
     const runConversion = async () => {
       setIsConverting(true);
-      setError(null);
-
       try {
         let result: Result<string>;
         if (mode === 'encrypt') {
@@ -63,37 +72,44 @@ export default function CryptoPage() {
           result = await decryptText(debouncedInput, debouncedPassword);
         }
 
+        if (cancelled) return;
+
         if (result.success) {
-          setOutput(result.data);
-          setError(null);
-          setStats({
+          setOverrideOutput(result.data);
+          setOverrideError(null);
+          setOverrideStats({
             processingTime: result.meta?.processingTime,
             inputSize: result.meta?.inputSize,
             outputSize: result.meta?.outputSize,
           });
         } else {
-          setOutput('');
-          setError(result.error.message);
-          setStats({});
+          setOverrideOutput('');
+          setOverrideError(result.error.message);
+          setOverrideStats({});
         }
       } catch {
-        setError('转换过程中发生未知错误');
-        setOutput('');
-        setStats({});
+        if (cancelled) return;
+        setOverrideError('转换过程中发生未知错误');
+        setOverrideOutput('');
+        setOverrideStats({});
       } finally {
-        setIsConverting(false);
+        if (!cancelled) setIsConverting(false);
       }
     };
 
     runConversion();
+
+    return () => {
+      cancelled = true;
+    };
   }, [debouncedInput, debouncedPassword, mode]);
 
   const handleModeSwitch = () => {
     setMode((prev) => (prev === 'encrypt' ? 'decrypt' : 'encrypt'));
     setInput('');
-    setOutput('');
-    setError(null);
-    setStats({});
+    setOverrideOutput(null);
+    setOverrideError(null);
+    setOverrideStats(null);
   };
 
   return (

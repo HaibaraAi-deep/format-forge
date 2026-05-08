@@ -7,7 +7,7 @@ export function formatJson(input: string, indent: number = 2): Result<string> {
   if (!input || !input.trim()) {
     return {
       success: false,
-      error: { code: 'EMPTY_INPUT', message: 'Input JSON string is empty' },
+      error: { code: 'EMPTY_INPUT', message: '输入的 JSON 字符串为空' },
     };
   }
 
@@ -23,7 +23,7 @@ export function formatJson(input: string, indent: number = 2): Result<string> {
       meta: { processingTime: performance.now() - start, inputSize, outputSize },
     };
   } catch (e) {
-    const msg = e instanceof Error ? e.message : 'Invalid JSON';
+    const msg = e instanceof Error ? e.message : '无效的 JSON';
     const posMatch = msg.match(/position\s+(\d+)/i);
     let line: number | undefined;
     let column: number | undefined;
@@ -40,7 +40,7 @@ export function formatJson(input: string, indent: number = 2): Result<string> {
       success: false,
       error: {
         code: 'INVALID_JSON',
-        message: 'Failed to format JSON',
+        message: 'JSON 格式化失败',
         details: msg,
         line,
         column,
@@ -56,7 +56,7 @@ export function minifyJson(input: string): Result<string> {
   if (!input || !input.trim()) {
     return {
       success: false,
-      error: { code: 'EMPTY_INPUT', message: 'Input JSON string is empty' },
+      error: { code: 'EMPTY_INPUT', message: '输入的 JSON 字符串为空' },
     };
   }
 
@@ -71,7 +71,7 @@ export function minifyJson(input: string): Result<string> {
       meta: { processingTime: performance.now() - start, inputSize, outputSize },
     };
   } catch (e) {
-    const msg = e instanceof Error ? e.message : 'Invalid JSON';
+    const msg = e instanceof Error ? e.message : '无效的 JSON';
     const posMatch = msg.match(/position\s+(\d+)/i);
     let line: number | undefined;
     let column: number | undefined;
@@ -88,7 +88,7 @@ export function minifyJson(input: string): Result<string> {
       success: false,
       error: {
         code: 'INVALID_JSON',
-        message: 'Failed to minify JSON',
+        message: 'JSON 压缩失败',
         details: msg,
         line,
         column,
@@ -106,7 +106,7 @@ export function validateJson(
   if (!input || !input.trim()) {
     return {
       success: true,
-      data: { valid: false, error: 'Input is empty' },
+      data: { valid: false, error: '输入为空' },
       meta: { processingTime: performance.now() - start, inputSize, outputSize: 0 },
     };
   }
@@ -120,7 +120,7 @@ export function validateJson(
       meta: { processingTime: performance.now() - start, inputSize, outputSize },
     };
   } catch (e) {
-    const msg = e instanceof Error ? e.message : 'Invalid JSON';
+    const msg = e instanceof Error ? e.message : '无效的 JSON';
     const posMatch = msg.match(/position\s+(\d+)/i);
     let line: number | undefined;
     let column: number | undefined;

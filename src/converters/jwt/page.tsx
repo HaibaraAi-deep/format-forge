@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useMemo } from 'react';
 import type { Result } from '@/types';
 import { ConverterLayout } from '@/components/converter/ConverterLayout';
 import { InputPanel } from '@/components/converter/InputPanel';
@@ -44,33 +44,46 @@ function JsonBlock({ json, title, copyButton }: { json: string; title: string; c
         {copyButton}
       </div>
       <pre className="overflow-auto rounded-[var(--radius)] border border-[var(--border)] bg-[var(--muted)]/30 p-4 font-mono text-xs leading-relaxed">
-        <code dangerouslySetInnerHTML={{ __html: syntaxHighlight(json) }} />
+        <code>{syntaxHighlightElements(json)}</code>
       </pre>
     </div>
   );
 }
 
-function syntaxHighlight(json: string): string {
-  return json.replace(
-    /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?)/g,
-    (match) => {
-      let cls = 'text-[#e06c75]';
-      if (/^"/.test(match)) {
-        if (/:$/.test(match)) {
-          cls = 'text-[#61afef]';
-        } else {
-          cls = 'text-[#98c379]';
-        }
-      } else if (/true|false/.test(match)) {
-        cls = 'text-[#d19a66]';
-      } else if (/null/.test(match)) {
-        cls = 'text-[#c678dd]';
-      } else if (/\d/.test(match)) {
-        cls = 'text-[#d19a66]';
+function syntaxHighlightElements(json: string): React.ReactNode[] {
+  const parts: React.ReactNode[] = [];
+  let lastIndex = 0;
+  const regex = /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?)/g;
+  let match: RegExpExecArray | null;
+  let key = 0;
+
+  while ((match = regex.exec(json)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(json.slice(lastIndex, match.index));
+    }
+    let cls = 'text-[#e06c75]';
+    if (/^"/.test(match[0])) {
+      if (/:$/.test(match[0])) {
+        cls = 'text-[#61afef]';
+      } else {
+        cls = 'text-[#98c379]';
       }
-      return `<span class="${cls}">${match}</span>`;
-    },
-  );
+    } else if (/true|false/.test(match[0])) {
+      cls = 'text-[#d19a66]';
+    } else if (/null/.test(match[0])) {
+      cls = 'text-[#c678dd]';
+    } else if (/\d/.test(match[0])) {
+      cls = 'text-[#d19a66]';
+    }
+    parts.push(<span key={key++} className={cls}>{match[0]}</span>);
+    lastIndex = match.index + match[0].length;
+  }
+
+  if (lastIndex < json.length) {
+    parts.push(json.slice(lastIndex));
+  }
+
+  return parts;
 }
 
 function CopyButton({ text }: { text: string }) {
@@ -94,30 +107,22 @@ function CopyButton({ text }: { text: string }) {
 
 export default function JwtPage() {
   const [input, setInput] = useState('');
-  const [decoded, setDecoded] = useState<JwtDecoded | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const debouncedInput = useDebounce(input, 300);
 
-  const decode = useCallback((token: string) => {
-    if (!token.trim()) {
-      setDecoded(null);
-      setError(null);
-      return;
+  const conversionResult = useMemo(() => {
+    if (!debouncedInput.trim()) {
+      return { decoded: null as JwtDecoded | null, error: null as string | null };
     }
 
-    const result: Result<JwtDecoded> = parseJwt(token);
+    const result: Result<JwtDecoded> = parseJwt(debouncedInput);
     if (result.success) {
-      setDecoded(result.data);
-      setError(null);
-    } else {
-      setDecoded(null);
-      setError(result.error.message);
+      return { decoded: result.data, error: null };
     }
-  }, []);
+    return { decoded: null, error: result.error.message };
+  }, [debouncedInput]);
 
-  useEffect(() => {
-    decode(debouncedInput);
-  }, [debouncedInput, decode]);
+  const decoded = conversionResult.decoded;
+  const error = conversionResult.error;
 
   const headerJson = decoded ? JSON.stringify(decoded.header, null, 2) : '';
   const payloadJson = decoded ? JSON.stringify(decoded.payload, null, 2) : '';

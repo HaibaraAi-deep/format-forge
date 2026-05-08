@@ -7,7 +7,7 @@ export function bytesToHex(arrayBuffer: ArrayBuffer): Result<string> {
   if (inputSize === 0) {
     return {
       success: false,
-      error: { code: 'EMPTY_INPUT', message: 'Input ArrayBuffer is empty' },
+      error: { code: 'EMPTY_INPUT', message: '输入数据为空' },
     };
   }
 
@@ -53,8 +53,8 @@ export function bytesToHex(arrayBuffer: ArrayBuffer): Result<string> {
       success: false,
       error: {
         code: 'CONVERSION_ERROR',
-        message: 'Failed to convert bytes to hex dump',
-        details: e instanceof Error ? e.message : 'Unknown error',
+        message: '字节转十六进制失败',
+        details: e instanceof Error ? e.message : '未知错误',
       },
     };
   }
@@ -67,7 +67,7 @@ export function stringToHex(input: string): Result<string> {
   if (!input) {
     return {
       success: false,
-      error: { code: 'EMPTY_INPUT', message: 'Input string is empty' },
+      error: { code: 'EMPTY_INPUT', message: '输入字符串为空' },
     };
   }
 
@@ -92,8 +92,8 @@ export function stringToHex(input: string): Result<string> {
       success: false,
       error: {
         code: 'CONVERSION_ERROR',
-        message: 'Failed to convert string to hex',
-        details: e instanceof Error ? e.message : 'Unknown error',
+        message: '字符串转十六进制失败',
+        details: e instanceof Error ? e.message : '未知错误',
       },
     };
   }

@@ -1,12 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { ConverterLayout } from '@/components/converter/ConverterLayout';
 import { InputPanel } from '@/components/converter/InputPanel';
 import { ErrorDisplay } from '@/components/converter/ErrorDisplay';
 import { ConversionStats } from '@/components/converter/ConversionStats';
 import { Button } from '@/components/ui/button';
-import { useClipboard } from '@/hooks/useClipboard';
+import { useClipboard } from '@/hooks/use-clipboard';
 import { useDebounce } from '@/hooks/useDebounce';
 import { markdownToHtml } from '@/services/converters/markdown';
+import { downloadAsFile } from '@/utils/file';
 import { cn } from '@/lib/utils';
 import { Copy, Check, Download } from 'lucide-react';
 
@@ -27,7 +28,6 @@ const defaultMarkdown = `# FormatForge
 
 \`\`\`javascript
 const result = formatJson(input, 2);
-console.log(result);
 \`\`\`
 
 ## 表格
@@ -46,36 +46,38 @@ console.log(result);
 
 export default function MarkdownPage() {
   const [input, setInput] = useState(defaultMarkdown);
-  const [htmlOutput, setHtmlOutput] = useState('');
-  const [error, setError] = useState<string | null>(null);
   const [outputTab, setOutputTab] = useState<OutputTab>('preview');
-  const [stats, setStats] = useState<{
-    processingTime?: number;
-    inputSize?: number;
-    outputSize?: number;
-  }>({});
 
   const { copied, copy } = useClipboard();
   const debouncedInput = useDebounce(input, 300);
 
-  useEffect(() => {
+  const conversionResult = useMemo(() => {
     if (!debouncedInput.trim()) {
-      setHtmlOutput('');
-      setStats({});
-      return;
+      return { htmlOutput: '', error: null as string | null, stats: {} as { processingTime?: number; inputSize?: number; outputSize?: number } };
     }
 
     const result = markdownToHtml(debouncedInput);
     if (result.success) {
-      setHtmlOutput(result.data);
-      setError(null);
-      setStats(result.meta ?? {});
-    } else {
-      setHtmlOutput('');
-      setError(result.error.details ?? result.error.message);
-      setStats({});
+      return { htmlOutput: result.data, error: null, stats: result.meta ?? {} };
     }
+    return { htmlOutput: '', error: result.error.details ?? result.error.message, stats: {} as { processingTime?: number; inputSize?: number; outputSize?: number } };
   }, [debouncedInput]);
+
+  const htmlOutput = conversionResult.htmlOutput;
+  const error = conversionResult.error;
+  const stats = conversionResult.stats;
+
+  const previewRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (previewRef.current) {
+      if (htmlOutput) {
+        previewRef.current.innerHTML = htmlOutput;
+      } else {
+        previewRef.current.innerHTML = '<p style="color: var(--muted-foreground)">预览将在此显示...</p>';
+      }
+    }
+  }, [htmlOutput]);
 
   const handleDownload = () => {
     if (!htmlOutput) return;
@@ -99,15 +101,7 @@ export default function MarkdownPage() {
 ${htmlOutput}
 </body>
 </html>`;
-    const blob = new Blob([fullHtml], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'markdown-export.html';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    downloadAsFile(fullHtml, 'markdown-export.html', 'text/html');
   };
 
   return (
@@ -179,12 +173,12 @@ ${htmlOutput}
 
           {outputTab === 'preview' ? (
             <div
+              ref={previewRef}
               className={cn(
                 'min-h-[200px] flex-1 overflow-auto rounded-[var(--radius)] border border-[var(--border)] bg-[var(--background)] p-4',
                 'prose prose-sm dark:prose-invert max-w-none',
                 'text-sm leading-relaxed text-[var(--foreground)]',
               )}
-              dangerouslySetInnerHTML={{ __html: htmlOutput || '<p class="text-[var(--muted-foreground)]">预览将在此显示...</p>' }}
             />
           ) : (
             <textarea

@@ -1,5 +1,6 @@
 import { Clock, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { formatByteSize, formatDuration } from '@/utils/format';
 
 interface ConversionStatsProps {
   processingTime?: number;
@@ -7,16 +8,9 @@ interface ConversionStatsProps {
   outputSize?: number;
 }
 
-function formatByteSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
-
 function formatTime(ms: number): string {
   if (ms < 1) return `${(ms * 1000).toFixed(0)}μs`;
-  if (ms < 1000) return `${ms.toFixed(1)}ms`;
-  return `${(ms / 1000).toFixed(2)}s`;
+  return formatDuration(ms);
 }
 
 export function ConversionStats({ processingTime, inputSize, outputSize }: ConversionStatsProps) {
