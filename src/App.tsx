@@ -1,22 +1,10 @@
-import { lazy, Suspense } from 'react';
+import { Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { ToastProvider } from '@/components/ui/toast';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import HomePage from '@/app/page';
-
-const JsonCsvPage = lazy(() => import('@/converters/json-csv/page'));
-const Base64Page = lazy(() => import('@/converters/base64/page'));
-const CryptoPage = lazy(() => import('@/converters/crypto/page'));
-const ColorPage = lazy(() => import('@/converters/color/page'));
-const JsonFormatterPage = lazy(() => import('@/converters/json-formatter/page'));
-const MarkdownPage = lazy(() => import('@/converters/markdown/page'));
-const UrlPage = lazy(() => import('@/converters/url/page'));
-const TimestampPage = lazy(() => import('@/converters/timestamp/page'));
-const YamlJsonPage = lazy(() => import('@/converters/yaml-json/page'));
-const XmlJsonPage = lazy(() => import('@/converters/xml-json/page'));
-const HexViewerPage = lazy(() => import('@/converters/hex-viewer/page'));
-const JwtPage = lazy(() => import('@/converters/jwt/page'));
+import { toolConfigs } from '@/config/routes';
 
 function LoadingFallback() {
   return (
@@ -26,39 +14,6 @@ function LoadingFallback() {
         <p className="text-[var(--muted-foreground)] text-sm">加载中...</p>
       </div>
     </div>
-  );
-}
-
-function App() {
-  return (
-    <BrowserRouter>
-      <ToastProvider>
-        <div className="min-h-screen flex flex-col bg-[var(--background)] text-[var(--foreground)]">
-          <Header />
-          <main className="flex-1">
-            <Suspense fallback={<LoadingFallback />}>
-              <Routes>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/json-csv" element={<JsonCsvPage />} />
-                <Route path="/base64" element={<Base64Page />} />
-                <Route path="/crypto" element={<CryptoPage />} />
-                <Route path="/color" element={<ColorPage />} />
-                <Route path="/json-formatter" element={<JsonFormatterPage />} />
-                <Route path="/markdown" element={<MarkdownPage />} />
-                <Route path="/url" element={<UrlPage />} />
-                <Route path="/timestamp" element={<TimestampPage />} />
-                <Route path="/yaml-json" element={<YamlJsonPage />} />
-                <Route path="/xml-json" element={<XmlJsonPage />} />
-                <Route path="/hex-viewer" element={<HexViewerPage />} />
-                <Route path="/jwt" element={<JwtPage />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Suspense>
-          </main>
-          <Footer />
-        </div>
-      </ToastProvider>
-    </BrowserRouter>
   );
 }
 
@@ -76,6 +31,30 @@ function NotFound() {
         </Link>
       </div>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <ToastProvider>
+        <div className="min-h-screen flex flex-col bg-[var(--background)] text-[var(--foreground)]">
+          <Header />
+          <main className="flex-1">
+            <Suspense fallback={<LoadingFallback />}>
+              <Routes>
+                <Route path="/" element={<HomePage />} />
+                {toolConfigs.map((tool) => (
+                  <Route key={tool.id} path={tool.route.path} element={<tool.route.component />} />
+                ))}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
+          </main>
+          <Footer />
+        </div>
+      </ToastProvider>
+    </BrowserRouter>
   );
 }
 

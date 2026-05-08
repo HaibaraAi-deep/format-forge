@@ -44,41 +44,46 @@ function JsonBlock({ json, title, copyButton }: { json: string; title: string; c
         {copyButton}
       </div>
       <pre className="overflow-auto rounded-[var(--radius)] border border-[var(--border)] bg-[var(--muted)]/30 p-4 font-mono text-xs leading-relaxed">
-        <code dangerouslySetInnerHTML={{ __html: syntaxHighlight(json) }} />
+        <code>{syntaxHighlightElements(json)}</code>
       </pre>
     </div>
   );
 }
 
-function escapeHtml(str: string): string {
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
+function syntaxHighlightElements(json: string): React.ReactNode[] {
+  const parts: React.ReactNode[] = [];
+  let lastIndex = 0;
+  const regex = /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?)/g;
+  let match: RegExpExecArray | null;
+  let key = 0;
 
-function syntaxHighlight(json: string): string {
-  return json.replace(
-    /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?)/g,
-    (match) => {
-      let cls = 'text-[#e06c75]';
-      if (/^"/.test(match)) {
-        if (/:$/.test(match)) {
-          cls = 'text-[#61afef]';
-        } else {
-          cls = 'text-[#98c379]';
-        }
-      } else if (/true|false/.test(match)) {
-        cls = 'text-[#d19a66]';
-      } else if (/null/.test(match)) {
-        cls = 'text-[#c678dd]';
-      } else if (/\d/.test(match)) {
-        cls = 'text-[#d19a66]';
+  while ((match = regex.exec(json)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(json.slice(lastIndex, match.index));
+    }
+    let cls = 'text-[#e06c75]';
+    if (/^"/.test(match[0])) {
+      if (/:$/.test(match[0])) {
+        cls = 'text-[#61afef]';
+      } else {
+        cls = 'text-[#98c379]';
       }
-      return `<span class="${cls}">${escapeHtml(match)}</span>`;
-    },
-  );
+    } else if (/true|false/.test(match[0])) {
+      cls = 'text-[#d19a66]';
+    } else if (/null/.test(match[0])) {
+      cls = 'text-[#c678dd]';
+    } else if (/\d/.test(match[0])) {
+      cls = 'text-[#d19a66]';
+    }
+    parts.push(<span key={key++} className={cls}>{match[0]}</span>);
+    lastIndex = match.index + match[0].length;
+  }
+
+  if (lastIndex < json.length) {
+    parts.push(json.slice(lastIndex));
+  }
+
+  return parts;
 }
 
 function CopyButton({ text }: { text: string }) {

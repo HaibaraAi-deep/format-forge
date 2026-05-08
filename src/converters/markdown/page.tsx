@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { ConverterLayout } from '@/components/converter/ConverterLayout';
 import { InputPanel } from '@/components/converter/InputPanel';
 import { ErrorDisplay } from '@/components/converter/ErrorDisplay';
@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { useClipboard } from '@/hooks/use-clipboard';
 import { useDebounce } from '@/hooks/useDebounce';
 import { markdownToHtml } from '@/services/converters/markdown';
+import { downloadAsFile } from '@/utils/file';
 import { cn } from '@/lib/utils';
 import { Copy, Check, Download } from 'lucide-react';
 
@@ -66,6 +67,18 @@ export default function MarkdownPage() {
   const error = conversionResult.error;
   const stats = conversionResult.stats;
 
+  const previewRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (previewRef.current) {
+      if (htmlOutput) {
+        previewRef.current.innerHTML = htmlOutput;
+      } else {
+        previewRef.current.innerHTML = '<p style="color: var(--muted-foreground)">预览将在此显示...</p>';
+      }
+    }
+  }, [htmlOutput]);
+
   const handleDownload = () => {
     if (!htmlOutput) return;
     const fullHtml = `<!DOCTYPE html>
@@ -88,15 +101,7 @@ export default function MarkdownPage() {
 ${htmlOutput}
 </body>
 </html>`;
-    const blob = new Blob([fullHtml], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'markdown-export.html';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    downloadAsFile(fullHtml, 'markdown-export.html', 'text/html');
   };
 
   return (
@@ -168,12 +173,12 @@ ${htmlOutput}
 
           {outputTab === 'preview' ? (
             <div
+              ref={previewRef}
               className={cn(
                 'min-h-[200px] flex-1 overflow-auto rounded-[var(--radius)] border border-[var(--border)] bg-[var(--background)] p-4',
                 'prose prose-sm dark:prose-invert max-w-none',
                 'text-sm leading-relaxed text-[var(--foreground)]',
               )}
-              dangerouslySetInnerHTML={{ __html: htmlOutput || '<p class="text-[var(--muted-foreground)]">预览将在此显示...</p>' }}
             />
           ) : (
             <textarea
